@@ -1,1 +1,4 @@
 * text=auto
+
+# Always lf as line-ending for shell files
+*.sh text eol=lf
