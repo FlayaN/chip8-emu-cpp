@@ -1,15 +1,21 @@
 
+#include "Chip8.h"
+
 #include <fstream>
-#include <filesystem>
+
 #include <stdint.h>
 #include <array>
 
 #ifdef _MSC_VER
+#include <filesystem>
+#else
+#include <experimental/filesystem>
+#endif
+
 namespace std
 {
 	namespace filesystem = experimental::filesystem;
 }
-#endif
 
 int main(int argc, char **argv)
 {
@@ -30,4 +36,6 @@ int main(int argc, char **argv)
 
 	std::array<uint8_t, 0x1000> romData = {};
 	romFile.read((char*)romData.data() + 0x200, 0x1000);
+	Chip8 chip8(romData);
+	chip8.start();
 }
