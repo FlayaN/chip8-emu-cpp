@@ -33,7 +33,10 @@
 
 # folders
 build
-.vs
+roms
+
+.vs/*
+!.vs/launch.vs.json
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json

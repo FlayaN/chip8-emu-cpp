@@ -1,0 +1,14 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "Chip8Emulator.exe (bin\\Chip8Emulator.exe)",
+      "name": "Chip8Emulator.exe (bin\\Chip8Emulator.exe)",
+      "args": ["roms/15PUZZLE"],
+      "currentDir": "${workspaceRoot}"
+    }
+  ]
+}
