@@ -56,7 +56,7 @@ void Cpu::executeInstruction(uint16_t instruction)
 				}
 				default:
 				{
-					this->pc = instr.address;
+					reg.pc = instr.address;
 					printf("Call %03X", instr.address);
 					break;
 				}
@@ -65,23 +65,49 @@ void Cpu::executeInstruction(uint16_t instruction)
 		}
 		case 0x3:
 		{
-			if (vx[instr.nibble.third] == instr.byte.first)
+			if (reg.v[instr.nibble.third] == instr.byte.first)
 			{
-				this->pc += 2;
+				reg.pc += 2;
 			}
 			break;
 		}
 		case 0x4:
 		{
-			if (vx[instr.nibble.third] != instr.byte.first)
+			if (reg.v[instr.nibble.third] != instr.byte.first)
 			{
-				this->pc += 2;
+				reg.pc += 2;
 			}
 			break;
 		}
 		case 0x6:
 		{
-			vx[instr.nibble.third] = instr.byte.first;
+			reg.v[instr.nibble.third] = instr.byte.first;
+			break;
+		}
+		case 0xA:
+		{
+			reg.l = instr.address;
+			break;
+		}
+		case 0xF:
+		{
+			switch(instr.byte.first)
+			{
+				case 0x55:
+				{
+					for(int i = 0; i <= instr.nibble.third; i++)
+					{
+						memory[reg.l] = reg.v[i];
+						reg.l++;
+					}
+					break;
+				}
+				default:
+				{
+					printf("Not implemented 0xF");
+					break;
+				}
+			}
 			break;
 		}
 		default:
