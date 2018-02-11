@@ -22,6 +22,8 @@ struct Cpu
 		std::array<uint8_t, 16> v{};
 		uint16_t l = 0;
 	} reg;
+
+	uint8_t delayTimer = 0;
 	
 	void redraw(const std::bitset<64 * 32>& pixels) const;
 	void executeInstruction(uint16_t instruction, std::bitset<64 * 32>& pixels);

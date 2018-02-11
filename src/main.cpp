@@ -19,6 +19,7 @@ namespace std
 
 int main(int argc, char **argv)
 {
+	srand(time(NULL));
 	std::filesystem::path romPath = "";
 	if(argc > 1)
 	{

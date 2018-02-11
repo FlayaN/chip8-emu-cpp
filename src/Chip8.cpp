@@ -66,6 +66,11 @@ void Chip8::start()
 
 		_cpu.executeInstruction(instruction, _screenPixels);
 		_cpu.reg.pc += 2;
+		if (_cpu.delayTimer > 0)
+		{
+			// todo 60hertz
+			_cpu.delayTimer--;
+		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
 }
