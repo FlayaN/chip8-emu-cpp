@@ -16,23 +16,40 @@ union Instruction
 	struct
 	{
 		uint8_t first : 4;
-		uint8_t second : 4;
-		uint8_t third : 4;
+		uint8_t y : 4;
+		uint8_t x : 4;
 		uint8_t opcode : 4;
 	} nibble;
-
-	struct {
-		const uint8_t operator[](size_t index) const {
-			return (instr & (0x000F << index) >> index * 4);
-		}
-	private:
-		uint16_t instr;
-	} nibbles;
 
 	uint16_t address : 12;
 };
 
-void Cpu::executeInstruction(uint16_t instruction)
+void Cpu::redraw(const std::bitset<64 * 32>& pixels) const
+{
+	printf("\n");
+	for (int x = 0; x < 66; x++)
+	{
+		printf("**");
+	}
+	printf("\n");
+	for (int y = 0; y < 32; y++)
+	{
+		printf("**");
+		for (int x = 0; x < 64; x++)
+		{
+			auto pixelVal = pixels[x + y * 64] ? 219 : ' ';
+			printf("%c%c", pixelVal, pixelVal);
+		}
+		printf("**\n");
+	}
+	for (int x = 0; x < 66; x++)
+	{
+		printf("**");
+	}
+	printf("\n");
+}
+
+void Cpu::executeInstruction(uint16_t instruction, std::bitset<64 * 32>& pixels)
 {
 	printf("%04X: ", instruction);
 
@@ -46,7 +63,8 @@ void Cpu::executeInstruction(uint16_t instruction)
 			{
 				case 0x00E0:
 				{
-					printf("not implemented: screen cleared");
+					pixels = {};
+					redraw(pixels);
 					break;
 				}
 				case 0x00EE:
@@ -71,7 +89,7 @@ void Cpu::executeInstruction(uint16_t instruction)
 		}
 		case 0x3:
 		{
-			if (reg.v[instr.nibble.third] == instr.byte.first)
+			if (reg.v[instr.nibble.x] == instr.byte.first)
 			{
 				reg.pc += 2;
 			}
@@ -79,7 +97,7 @@ void Cpu::executeInstruction(uint16_t instruction)
 		}
 		case 0x4:
 		{
-			if (reg.v[instr.nibble.third] != instr.byte.first)
+			if (reg.v[instr.nibble.x] != instr.byte.first)
 			{
 				reg.pc += 2;
 			}
@@ -87,12 +105,31 @@ void Cpu::executeInstruction(uint16_t instruction)
 		}
 		case 0x6:
 		{
-			reg.v[instr.nibble.third] = instr.byte.first;
+			reg.v[instr.nibble.x] = instr.byte.first;
 			break;
 		}
 		case 0xA:
 		{
 			reg.l = instr.address;
+			break;
+		}
+		case 0xD:
+		{
+			const auto& vx = reg.v[instr.nibble.x];
+			const auto& vy = reg.v[instr.nibble.y];
+
+			size_t spriteIndex = (&memMap.memory[reg.l] - &(memMap.namedMemory.sprites[0][0])) / sizeof(std::array<uint8_t, 5>);
+
+			const std::array<uint8_t, 5>& sprite = memMap.namedMemory.sprites[spriteIndex];
+			
+			for (int y = 0; y < instr.nibble.first; y++)
+			{
+				for (int x = 0; x < 8; x++)
+				{
+					pixels[x + vx + (y + vy) * 64] = (sprite[y] & (1 << x)) >> x;
+				}
+			}
+			redraw(pixels);
 			break;
 		}
 		case 0xF:
@@ -101,23 +138,29 @@ void Cpu::executeInstruction(uint16_t instruction)
 			{
 				case 0x1E:
 				{
-					reg.l += reg.v[instr.nibble.third];
+					reg.l += reg.v[instr.nibble.x];
+					break;
+				}
+				case 0x29:
+				{
+					// Address of the sprite in the actual memory
+					reg.l = &(memMap.namedMemory.sprites[instr.nibble.x][0]) - &(memMap.namedMemory.sprites[0][0]);
 					break;
 				}
 				case 0x55:
 				{
-					for(int i = 0; i <= instr.nibble.third; i++)
+					for(int i = 0; i <= instr.nibble.x; i++)
 					{
-						memory[reg.l] = reg.v[i];
+						memMap.memory[reg.l] = reg.v[i];
 						reg.l++;
 					}
 					break;
 				}				
 				case 0x65:
 				{
-					for(int i = 0; i <= instr.nibble.third; i++)
+					for(int i = 0; i <= instr.nibble.x; i++)
 					{
-						reg.v[i] = memory[reg.l];
+						reg.v[i] = memMap.memory[reg.l];
 						reg.l++;
 					}
 					break;

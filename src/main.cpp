@@ -34,8 +34,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	std::array<uint8_t, 0x1000> romData = {};
-	romFile.read((char*)romData.data() + 0x200, 0x1000);
+	std::array<uint8_t, 0x800> romData = {};
+	romFile.read((char*)romData.data(), 0x800);
 	Chip8 chip8(romData);
 	chip8.start();
 }
