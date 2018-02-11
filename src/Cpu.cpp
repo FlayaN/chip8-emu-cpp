@@ -63,6 +63,12 @@ void Cpu::executeInstruction(uint16_t instruction)
 			}
 			break;
 		}
+		case 0x2:
+		{
+			stack.push(reg.pc);
+			reg.pc = instr.address - 2;
+			break;
+		}
 		case 0x3:
 		{
 			if (reg.v[instr.nibble.third] == instr.byte.first)
@@ -93,11 +99,25 @@ void Cpu::executeInstruction(uint16_t instruction)
 		{
 			switch(instr.byte.first)
 			{
+				case 0x1E:
+				{
+					reg.l += reg.v[instr.nibble.third];
+					break;
+				}
 				case 0x55:
 				{
 					for(int i = 0; i <= instr.nibble.third; i++)
 					{
 						memory[reg.l] = reg.v[i];
+						reg.l++;
+					}
+					break;
+				}				
+				case 0x65:
+				{
+					for(int i = 0; i <= instr.nibble.third; i++)
+					{
+						reg.v[i] = memory[reg.l];
 						reg.l++;
 					}
 					break;
