@@ -1,12 +1,44 @@
 #include "Cpu.h"
 #include <stdio.h>
 
+union Instruction
+{
+	uint16_t instr;
+
+	struct
+	{
+		uint8_t first;
+		uint8_t second;
+	} byte;
+
+	uint8_t bytes[2];
+
+	struct
+	{
+		uint8_t first : 4;
+		uint8_t second : 4;
+		uint8_t third : 4;
+		uint8_t opcode : 4;
+	} nibble;
+
+	struct {
+		const uint8_t operator[](size_t index) const {
+			return (instr & (0x000F << index) >> index * 4);
+		}
+	private:
+		uint16_t instr;
+	} nibbles;
+
+	uint16_t address : 12;
+};
+
 void Cpu::executeInstruction(uint16_t instruction)
 {
 	printf("%04X: ", instruction);
-	uint8_t opcode = (instruction & 0xF000) >> 12;
 
-	switch (opcode)
+	const Instruction instr = { instruction };
+
+	switch (instr.nibble.opcode)
 	{
 		case 0x0:
 		{
@@ -24,9 +56,8 @@ void Cpu::executeInstruction(uint16_t instruction)
 				}
 				default:
 				{
-					uint16_t address = instruction & 0x0FFF;
-					this->pc = address;
-					printf("Call %03X", address);
+					this->pc = instr.address;
+					printf("Call %03X", instr.address);
 					break;
 				}
 			}
@@ -34,7 +65,7 @@ void Cpu::executeInstruction(uint16_t instruction)
 		}
 		case 0x3:
 		{
-			if (vx[(instruction & 0x0F00) >> 8] == instruction & 0x00FF)
+			if (vx[instr.nibble.third] == instr.byte.first)
 			{
 				this->pc += 2;
 			}
@@ -42,7 +73,7 @@ void Cpu::executeInstruction(uint16_t instruction)
 		}
 		case 0x4:
 		{
-			if(vx[(instruction & 0x0F00) >> 8] != instruction & 0x00FF)
+			if (vx[instr.nibble.third] != instr.byte.first)
 			{
 				this->pc += 2;
 			}
@@ -50,12 +81,12 @@ void Cpu::executeInstruction(uint16_t instruction)
 		}
 		case 0x6:
 		{
-			vx[(instruction & 0x0F00) >> 8] = instruction & 0x00FF;
+			vx[instr.nibble.third] = instr.byte.first;
 			break;
 		}
 		default:
 		{
-			printf("Not implemented", instruction);
+			printf("Not implemented");
 			break;
 		}
 	}
