@@ -2,7 +2,6 @@
 #include "Chip8.h"
 
 #include <fstream>
-
 #include <stdint.h>
 #include <array>
 
@@ -12,10 +11,12 @@
 #include <experimental/filesystem>
 #endif
 
+#if ! (_MSC_VER >= 1912)
 namespace std
 {
 	namespace filesystem = experimental::filesystem;
 }
+#endif
 
 int main(int argc, char **argv)
 {
