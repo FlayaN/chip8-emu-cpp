@@ -11,7 +11,7 @@
 #include <experimental/filesystem>
 #endif
 
-#if ! (_MSC_VER >= 1912)
+#if ! (_MSC_VER >= 1914)
 namespace std
 {
 	namespace filesystem = experimental::filesystem;
